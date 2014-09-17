@@ -35,6 +35,9 @@ def stream(session):
         while True:
             d = f.readline()
             if d == b"":
+                print("disconnected.")
+                print("reconnecting...")
+                run()
                 break
             else:
                 d = json.loads(d.decode("utf-8"))
@@ -45,6 +48,7 @@ def stream(session):
                         print("connection failed.")
                         print("reconnecting...")
                         run()
+                        break
     except KeyboardInterrupt:
         print("terminating...")
     except:
