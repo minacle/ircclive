@@ -3,6 +3,7 @@ import urllib.request
 import urllib.parse
 import json
 import time
+import getpass
 
 def auth_formtoken():
     f = urllib.request.urlopen(urllib.request.Request("https://www.irccloud.com/chat/auth-formtoken", data=b"", method="POST"))
@@ -74,6 +75,6 @@ if __name__ == "__main__":
     if not email:
         email = input("email: ")
     if not password:
-        password = input("password: ")
+        password = getpass.getpass("password: ")
     print("connecting...")
     run()
