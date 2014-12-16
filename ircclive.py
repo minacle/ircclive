@@ -1,6 +1,7 @@
 import sys
 import urllib.request
 import urllib.parse
+import urllib.error
 import json
 import time
 import getpass
@@ -61,25 +62,18 @@ def stream(session):
     while True:
         d = f.readline()
         if not d:
-            print("[" + email + "] " + "disconnected.")
+            print("[%s] disconnected." % (email, ))
             break
         else:
             d = json.loads(d.decode("utf-8"))
             if d["type"] == "oob_include":
                 if oob_include(session, d["url"]):
-                    print("[" + email + "] " + "connected successfully.")
+                    print("[%s] connected successfully." % (email, ))
                 else:
-                    print("[" + email + "] " + "connection failed.")
-                    break
+                    print("[%s] connection failed." % (email, ))
+                break
             elif d["type"] == "stat_user":
                 stat_user = d
-            elif d["type"] == "idle":
-                heartbeat(session)
-            elif d["type"] == "buffer_msg":
-                interval += 1
-                if interval >= 10:
-                    heartbeat(session)
-                    interval = 0
     try:
         f.close()
     except:
@@ -102,21 +96,59 @@ def reconnect(session, cid):
     f = rpc_post(session, "reconnect", data=urllib.parse.urlencode({"session": session, "cid": cid}).encode("ascii"))
     d = json.loads(getresponse(f))
 
+def _identify(clear=False):
+    global email
+    global password
+    oe = email
+    try:
+        if clear:
+            email = None
+            password = None
+        while not email:
+            email = input("email: ")
+        while not password:
+            password = getpass.getpass("password: ")
+    except KeyboardInterrupt:
+        print("\n[%s] terminating..." % (oe or "(unknown)", ))
+        sys.exit(0)
+
 def _run():
+    global stat_user
     while True:
+        err = 0
+        stat_user = None
         try:
-            print("[" + email + "] " + "connecting...")
+            print("[%s] connecting..." % (email, ))
             stream(login(email, password, auth_formtoken()))
         except KeyboardInterrupt:
-            print("[" + email + "] " + "terminating...")
-            break
+            print("\n[%s] terminating..." % (email, ))
+            sys.exit(0)
+        except urllib.error.HTTPError as e:
+            err = e.code
         except:
             print()
-            print("[" + email + "]")
+            print("[%s]" % (email, ))
             traceback.print_exc()
             print()
-        print("[" + email + "] " + "waiting for 60 seconds...")
-        time.sleep(60)
+        try:
+            if stat_user:
+                zombie = stat_user["limits"]["zombiehours"] * 60 - 10
+                if zombie < 0:
+                    zombie = 1430
+                print("[%s] waiting for %d minutes..." % (email, zombie))
+                time.sleep(zombie)
+            elif err == 400:
+                print("[%s] bad request." % (email, ))
+                _identify(True)
+            elif err == 401:
+                print("[%s] unauthorised." % (email, ))
+                _identify(True)
+            else:
+                print("[%s] waiting for 90 seconds..." % (email, ))
+                time.sleep(90)
+        except KeyboardInterrupt:
+            print("\n[%s] terminating..." % (email, ))
+            sys.exit(0)
 
 if __name__ == "__main__":
     email, password = None, None
@@ -124,8 +156,7 @@ if __name__ == "__main__":
         password = sys.argv[2]
     if len(sys.argv) > 1:
         email = sys.argv[1]
-    if not email:
-        email = input("email: ")
-    if not password:
-        password = getpass.getpass("password: ")
+    _identify()
     _run()
+
+# vim: ts=4 sts=4 sw=4 et
