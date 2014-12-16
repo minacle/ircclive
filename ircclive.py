@@ -136,7 +136,7 @@ def _run():
                 if zombie < 0:
                     zombie = 1430
                 print("[%s] waiting for %d minutes..." % (email, zombie))
-                time.sleep(zombie)
+                time.sleep(zombie * 60)
             elif err == 400:
                 print("[%s] bad request." % (email, ))
                 _identify(True)
