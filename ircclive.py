@@ -88,10 +88,6 @@ def oob_include(session, url):
                 reconnect(session, i["cid"])
     return True if d else False
 
-def heartbeat(session):
-    f = rpc_post(session, "heartbeat", data=urllib.parse.urlencode({"session": session, "selectedBuffer": stat_user.get("last_selected_bid", -1)}).encode("ascii"))
-    d = json.loads(getresponse(f))
-
 def reconnect(session, cid):
     f = rpc_post(session, "reconnect", data=urllib.parse.urlencode({"session": session, "cid": cid}).encode("ascii"))
     d = json.loads(getresponse(f))
@@ -160,3 +156,4 @@ if __name__ == "__main__":
     _run()
 
 # vim: ts=4 sts=4 sw=4 et
+
