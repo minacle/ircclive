@@ -1,0 +1,3 @@
+usage: python3 ircclive.py
+       python3 ircclive.py "email@example.com"
+       python3 ircclive.py "email@example.com" "p4ssw0rd"
