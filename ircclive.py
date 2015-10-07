@@ -13,7 +13,12 @@ baseurl = "https://www.irccloud.com/chat/"
 stat_user = None
 
 def rpc(method, path, session=None, token=None, keepalive=False, data=None):
-    r = urllib.request.Request(urllib.parse.urljoin(baseurl, path), method=method)
+    try: #python 3.4 or later
+        r = urllib.request.Request(urllib.parse.urljoin(baseurl, path), method=method)
+        r.data = data
+    except TypeError:
+        r = urllib.request.Request(urllib.parse.urljoin(baseurl, path))
+        r.add_data(data)
     r.add_header("User-Agent", "IRCCLive")
     if method == "POST":
         r.add_header("Content-Type","application/x-www-form-urlencoded")
@@ -23,7 +28,7 @@ def rpc(method, path, session=None, token=None, keepalive=False, data=None):
         r.add_header("Connection", "keep-alive")
     if token:
         r.add_header("x-auth-formtoken", token)
-    return urllib.request.urlopen(r, data)
+    return urllib.request.urlopen(r)
 
 def rpc_get(session, path, keepalive=False):
     return rpc("GET", path, session, keepalive=keepalive)
