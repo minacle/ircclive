@@ -4,6 +4,12 @@ IRCCLive
 Simple IRCCloud session keeper; written in python3.
 
 
+Installation
+------------
+
+- ``pip install ircclive``
+
+
 Usage
 -----
 
