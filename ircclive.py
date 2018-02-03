@@ -10,10 +10,10 @@ import gzip
 import traceback
 
 baseurl = "https://www.irccloud.com/chat/"
-stat_user = None
+email, password, stat_user = None, None, None
 
 def rpc(method, path, session=None, token=None, keepalive=False, data=None):
-    try: #python 3.4 or later
+    try:  # python 3.4 or later
         r = urllib.request.Request(urllib.parse.urljoin(baseurl, path), method=method)
         r.data = data
     except TypeError:
@@ -67,15 +67,15 @@ def stream(session):
     while True:
         d = f.readline()
         if not d:
-            print("[%s] disconnected." % (email, ))
+            _print("disconnected.")
             break
         else:
             d = json.loads(d.decode("utf-8"))
             if d["type"] == "oob_include":
                 if oob_include(session, d["url"]):
-                    print("[%s] connected successfully." % (email, ))
+                    _print("connected successfully.")
                 else:
-                    print("[%s] connection failed." % (email, ))
+                    _print("connection failed.")
                 break
             elif d["type"] == "stat_user":
                 stat_user = d
@@ -97,6 +97,14 @@ def reconnect(session, cid):
     f = rpc_post(session, "reconnect", data=urllib.parse.urlencode({"session": session, "cid": cid}).encode("ascii"))
     d = json.loads(getresponse(f))
 
+def _print(*objects, reporter=None, sep=" ", begin="", end="\n", file=sys.stdout, flush=False):
+    try:  # python 3.3 or later
+        print("%s[%s]" % (begin, (reporter or email or "(unknown)")), *objects, sep=sep, end=end, file=file, flush=flush)
+    except TypeError:
+        print("%s[%s]" % (begin, (reporter or email or "(unknown)")), *objects, sep=sep, end=end, file=file)
+        if flush:
+            file.flush()
+
 def _identify(clear=False):
     global email
     global password
@@ -110,7 +118,7 @@ def _identify(clear=False):
         while not password:
             password = getpass.getpass("password: ")
     except KeyboardInterrupt:
-        print("\n[%s] terminating..." % (oe or "(unknown)", ))
+        _print("terminating...", reporter=oe, begin="\n")
         sys.exit(0)
 
 def _run():
@@ -119,16 +127,15 @@ def _run():
         err = 0
         stat_user = None
         try:
-            print("[%s] connecting..." % (email, ))
+            _print("connecting...")
             stream(login(email, password, auth_formtoken()))
         except KeyboardInterrupt:
-            print("\n[%s] terminating..." % (email, ))
+            _print("terminating...")
             sys.exit(0)
         except urllib.error.HTTPError as e:
             err = e.code
         except:
-            print()
-            print("[%s]" % (email, ))
+            _print(begin="\n")
             traceback.print_exc()
             print()
         try:
@@ -136,29 +143,25 @@ def _run():
                 zombie = stat_user["limits"]["zombiehours"] * 60 - 10
                 if zombie < 0:
                     zombie = 1430
-                print("[%s] waiting for %d minutes..." % (email, zombie))
+                _print("waiting for %d minutes..." % zombie)
                 time.sleep(zombie * 60)
             elif err == 400:
-                print("[%s] bad request." % (email, ))
+                _print("bad request.")
                 _identify(True)
             elif err == 401:
-                print("[%s] unauthorised." % (email, ))
+                _print("unauthorised.")
                 _identify(True)
             else:
-                print("[%s] waiting for 90 seconds..." % (email, ))
+                _print("waiting for 90 seconds...")
                 time.sleep(90)
         except KeyboardInterrupt:
-            print("\n[%s] terminating..." % (email, ))
+            _print("terminating...", begin="\n")
             sys.exit(0)
 
 if __name__ == "__main__":
-    email, password = None, None
     if len(sys.argv) > 2:
         password = sys.argv[2]
     if len(sys.argv) > 1:
         email = sys.argv[1]
     _identify()
     _run()
-
-# vim: ts=4 sts=4 sw=4 et
-
