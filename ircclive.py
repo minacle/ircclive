@@ -1,13 +1,13 @@
-import sys
-import urllib.request
-import urllib.parse
-import urllib.error
-import json
-import time
 import getpass
-import io
 import gzip
+import io
+import json
+import sys
+import time
 import traceback
+import urllib.error
+import urllib.parse
+import urllib.request
 
 baseurl = "https://www.irccloud.com/chat/"
 email, password, stat_user = None, None, None
@@ -158,10 +158,14 @@ def _run():
             _print("terminating...", begin="\n")
             sys.exit(0)
 
-if __name__ == "__main__":
+def _main():
+    global email, password
     if len(sys.argv) > 2:
         password = sys.argv[2]
     if len(sys.argv) > 1:
         email = sys.argv[1]
     _identify()
     _run()
+
+if __name__ == "__main__":
+    _main()
