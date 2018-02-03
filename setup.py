@@ -5,9 +5,6 @@ import re
 with open(join(abspath(dirname(__file__)), "ircclive.py")) as f:
     version = re.search(r'\n__version__ = \"(.*?)\"\n', f.read()).group(1)
 
-with open(join(abspath(dirname(__file__)), "README.rst")) as f:
-    long_description = f.read()
-
 setup(
     name="ircclive",
     version=version,
@@ -15,7 +12,6 @@ setup(
     author_email="minacle@live.com",
     url="https://github.com/minacle/ircclive",
     description="Simple IRCCloud session keeper; written in python3.",
-    long_description=long_description,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
