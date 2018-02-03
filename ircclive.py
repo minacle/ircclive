@@ -9,6 +9,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+__version__ = "1.0.0"
+
 baseurl = "https://www.irccloud.com/chat/"
 email, password, stat_user = None, None, None
 

@@ -1,16 +1,21 @@
 from distutils.core import setup
 from os.path import abspath, dirname, join
+import re
+
+with open(join(abspath(dirname(__file__)), "ircclive.py")) as f:
+    version = re.search(r'\n__version__ = \"(.*?)\"\n', f.read()).group(1)
 
 with open(join(abspath(dirname(__file__)), "README.rst")) as f:
     long_description = f.read()
 
 setup(
     name="ircclive",
-    version="1.0",
+    version=version,
     author="Mayu Laierlence",
     author_email="minacle@live.com",
     url="https://github.com/minacle/ircclive",
     description="Simple IRCCloud session keeper; written in python3.",
+    long_description=long_description,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
@@ -30,5 +35,4 @@ setup(
         "setuptools.installation": ["eggsecutable = ircclive:_main"],
     },
     zip_safe=True,
-    long_description=long_description,
 )
